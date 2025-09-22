@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { Contenedor } from "./componentes/container"
 import { Card } from "./componentes/card"
-import { consultar, buscarPeliculas } from "./api/api.js"
+import { consultar } from "./api/api.js"
 
 function App() {
   const [items, setItems] = useState([])
@@ -11,26 +11,21 @@ function App() {
 
   const manejarBusqueda = (evento) => {
     setQuery(evento.target.value)
-    setPage(1)
   }
 
   useEffect(() => {
     async function cargar() {
-      let data
-      if (query.trim() !== "") {
-        // 🔍 Si hay búsqueda → usar el endpoint de búsqueda
-        data = await buscarPeliculas(query, page)
-      } else {
-        // 📺 Si no hay búsqueda → mostrar populares
-        data = await consultar(page)
-      }
+      const data = await consultar(page)
       setItems(data.results ?? [])
       setTotalPages(data.total_pages ?? 1)
     }
     cargar()
-  }, [page, query])
+  }, [page])
 
-  
+  const filtrarItems = items.filter((item) =>
+  (item.title || item.name || "").toLowerCase().includes(query.toLowerCase())
+)
+
 
   return (
     <div className="bg-gradient-to-l 
@@ -70,7 +65,7 @@ function App() {
        
         <>
           <Contenedor>
-            {items.map((item) => (
+            {filtrarItems.map((item) => (
               <Card item={item} key={item?.id} />
             ))}
           </Contenedor>
